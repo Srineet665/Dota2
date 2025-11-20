@@ -10,8 +10,9 @@ A lightweight Streamlit dashboard that compares recent Dota 2 match results for 
 - Designed for easy embedding in Discord via Streamlit Community Cloud or any HTTPS host.
 
 ## Quick start
+##codex/create-dota-2-dashboard-using-api-c2dene
 1. (Recommended) Use Python 3.10+ and create a virtual environment:
-   ```bash
+   ```bashn
    python -m venv .venv
    source .venv/bin/activate  # Windows: .venv\Scripts\activate
    ```
@@ -20,7 +21,7 @@ A lightweight Streamlit dashboard that compares recent Dota 2 match results for 
    pip install -r requirements.txt
    ```
 3. Run the dashboard locally (add your API key via env var or in the UI):
-   ```bash
+   ```bashi
    # Optionally set your OpenDota/Steam Web API key for higher rate limits
    export DOTA_API_KEY="<your_api_key>"
 
@@ -28,6 +29,17 @@ A lightweight Streamlit dashboard that compares recent Dota 2 match results for 
    streamlit run dashboard.py
    ```
 4. Open the URL Streamlit prints (default: http://localhost:8501) to interact with the dashboard. Paste your Steam64 profile IDs (one per line or comma-separated). Add your OpenDota or Steam API key (optional) to improve rate limits.
+
+1. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+2. Run the dashboard locally:
+   ```bash
+   streamlit run dashboard.py
+   ```
+3. Open the provided local URL to interact with the dashboard. Paste your Steam64 profile IDs (one per line or comma-separated). Add your OpenDota or Steam API key (optional) to improve rate limits.
+main
 
 ## Embedding in Discord
 - Deploy the app to a public URL (e.g., Streamlit Community Cloud or any HTTPS host).
