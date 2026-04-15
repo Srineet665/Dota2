@@ -1,6 +1,6 @@
 import pandas as pd
 
-from dota_service import add_loss_rate, fetch_matches, normalize_api_key, normalize_ids, steam64_to_account_id, summarize_matches
+from dota_service import add_loss_rate, normalize_ids, steam64_to_account_id, summarize_matches
 
 
 def test_normalize_ids():
@@ -43,30 +43,3 @@ def test_add_loss_rate():
     )
     out = add_loss_rate(df)
     assert float(out.iloc[0]["loss_rate"]) == 75.0
-
-
-def test_normalize_api_key():
-    assert normalize_api_key("optional") is None
-    assert normalize_api_key("  ") is None
-    assert normalize_api_key("your_opendota_or_steam_key_here") is None
-    assert normalize_api_key("abc123") == "abc123"
-
-
-def test_fetch_matches_ignores_placeholder_key(monkeypatch):
-    calls = []
-
-    class DummyResponse:
-        def raise_for_status(self):
-            return None
-
-        def json(self):
-            return []
-
-    def fake_get(url, params, timeout):
-        calls.append(params)
-        return DummyResponse()
-
-    monkeypatch.setattr("dota_service.requests.get", fake_get)
-    out = fetch_matches(123, 7, "optional")
-    assert out.empty
-    assert "api_key" not in calls[0]

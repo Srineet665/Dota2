@@ -25,11 +25,11 @@ source .venv/bin/activate  # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-Set env vars (do **not** put the literal string `optional` as a key):
+Set env vars:
 
 ```bash
 export DISCORD_BOT_TOKEN="<your_discord_bot_token>"
-export DOTA_API_KEY="<optional_api_key>"  # leave unset if you do not have one
+export DOTA_API_KEY="<optional_api_key>"
 # Optional for fast slash command registration in one test server:
 export GUILD_ID="<your_discord_server_id>"
 ```

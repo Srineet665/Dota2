@@ -11,26 +11,6 @@ STEAM_EPOCH = 76561197960265728
 OPEN_DOTA_BASE_URL = "https://api.opendota.com/api"
 
 
-PLACEHOLDER_API_KEYS = {"optional", "none", "null", "your_api_key", "your_opendota_or_steam_key_here"}
-
-
-def normalize_api_key(api_key: Optional[str]) -> Optional[str]:
-    if api_key is None:
-        return None
-
-    cleaned = api_key.strip()
-    if not cleaned:
-        return None
-
-    if cleaned.lower() in PLACEHOLDER_API_KEYS:
-        return None
-
-    if cleaned.lower().startswith("your_"):
-        return None
-
-    return cleaned
-
-
 @dataclass
 class PlayerSummary:
     steam_id: str
@@ -76,27 +56,14 @@ def normalize_ids(raw_text: str) -> List[str]:
 
 
 def fetch_matches(account_id: int, days: int, api_key: Optional[str]) -> pd.DataFrame:
-    clean_key = normalize_api_key(api_key)
     params: Dict[str, object] = {"date": days, "limit": 200}
-    if clean_key:
-        params["api_key"] = clean_key
+    if api_key:
+        params["api_key"] = api_key
 
     url = f"{OPEN_DOTA_BASE_URL}/players/{account_id}/matches"
     try:
         response = requests.get(url, params=params, timeout=20)
         response.raise_for_status()
-    except requests.exceptions.SSLError as exc:
-        if clean_key:
-            retry_params = {"date": days, "limit": 200}
-            try:
-                response = requests.get(url, params=retry_params, timeout=20)
-                response.raise_for_status()
-            except requests.RequestException as retry_exc:
-                raise DotaServiceError(
-                    f"Failed to fetch matches for account_id={account_id} with and without api_key: {retry_exc}"
-                ) from retry_exc
-        else:
-            raise DotaServiceError(f"Failed to fetch matches for account_id={account_id}: {exc}") from exc
     except requests.RequestException as exc:
         raise DotaServiceError(f"Failed to fetch matches for account_id={account_id}: {exc}") from exc
 
