@@ -91,8 +91,14 @@ class DotaDiscordBot(commands.Bot):
         super().__init__(command_prefix="!", intents=intents)
         self.store = PlayerStore(DATA_FILE)
         self.api_key = os.getenv("DOTA_API_KEY")
+        self.guild_id = os.getenv("GUILD_ID")
 
     async def setup_hook(self) -> None:
+        if self.guild_id and self.guild_id.isdigit():
+            guild_obj = discord.Object(id=int(self.guild_id))
+            self.tree.copy_global_to(guild=guild_obj)
+            await self.tree.sync(guild=guild_obj)
+            return
         await self.tree.sync()
 
 

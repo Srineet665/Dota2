@@ -1,0 +1,15 @@
+services:
+  - type: worker
+    name: dota2-discord-bot
+    env: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: python discord_bot.py
+    autoDeploy: true
+    envVars:
+      - key: DISCORD_BOT_TOKEN
+        sync: false
+      - key: DOTA_API_KEY
+        sync: false
+      - key: GUILD_ID
+        sync: false

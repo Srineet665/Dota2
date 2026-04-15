@@ -1,23 +1,23 @@
 # Dota 2 Friends Dashboard + Discord Bot
 
-This repo now includes two ways to view your Dota stats:
+This repo includes:
+1. **Streamlit dashboard** (`dashboard.py`) for interactive charts.
+2. **Discord bot** (`discord_bot.py`) with slash commands for weekly leaderboards.
 
-1. **Streamlit dashboard** (`dashboard.py`) for interactive web charts.
-2. **Discord slash-command bot** (`discord_bot.py`) that posts a weekly leaderboard on demand.
-
-The Discord bot supports:
-- `/player add` to register players
-- `/player remove`
-- `/player activate`
-- `/player deactivate`
+## Discord commands
+- `/player add steam_id:<steam64> alias:<name>`
+- `/player remove steam_id:<steam64>`
+- `/player activate steam_id:<steam64>`
+- `/player deactivate steam_id:<steam64>`
 - `/player list`
-- `/weekly` to show top and worst performers among active players in the past 7 days
+- `/weekly` (top + worst active players in last 7 days)
+- `/invite` (prints OAuth invite URL)
+
+The bot stores tracked players per-server in `players.json`.
 
 ---
 
-## Quick start (local)
-
-### 1) Create env + install
+## Local run
 
 ```bash
 python -m venv .venv
@@ -25,73 +25,78 @@ source .venv/bin/activate  # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-### 2) Optional API key (for higher OpenDota limits)
+Set env vars:
 
 ```bash
-export DOTA_API_KEY="<your_opendota_or_steam_api_key>"
+export DISCORD_BOT_TOKEN="<your_discord_bot_token>"
+export DOTA_API_KEY="<optional_api_key>"
+# Optional for fast slash command registration in one test server:
+export GUILD_ID="<your_discord_server_id>"
 ```
 
-### 3A) Run Streamlit dashboard
+Run bot:
+
+```bash
+python discord_bot.py
+```
+
+Run dashboard:
 
 ```bash
 streamlit run dashboard.py
 ```
 
-### 3B) Run Discord bot
-
-```bash
-export DISCORD_BOT_TOKEN="<your_discord_bot_token>"
-python discord_bot.py
-```
-
 ---
 
-## Discord app setup (one-time)
+## Discord app setup
 
-1. Go to the [Discord Developer Portal](https://discord.com/developers/applications).
-2. Create a new application and add a **Bot**.
-3. Under **Bot**, copy the token and set it as `DISCORD_BOT_TOKEN`.
-4. Under **OAuth2 → URL Generator**:
+1. Go to <https://discord.com/developers/applications>
+2. Create app → add Bot.
+3. Copy **Bot Token** and set `DISCORD_BOT_TOKEN`.
+4. OAuth2 URL Generator:
    - Scopes: `bot`, `applications.commands`
-   - Bot Permissions: `Send Messages`, `Embed Links`
-5. Open the generated URL to invite your bot to your server (or run `/invite` once the bot is online).
+   - Bot permissions: `Send Messages`, `Embed Links`
+5. Invite to your server.
 
-### Slash commands in your server
+Direct invite URL format:
 
-After the bot starts, use:
-
-- `/player add steam_id:<steam64> alias:<name>`
-- `/player deactivate steam_id:<steam64>`
-- `/player activate steam_id:<steam64>`
-- `/player list`
-- `/weekly`
-- `/invite` (prints your OAuth invite URL)
-
-The bot stores guild player settings in `players.json`.
+```text
+https://discord.com/oauth2/authorize?client_id=<APPLICATION_ID>&permissions=18432&scope=bot%20applications.commands
+```
 
 ---
 
-## Deploy 24/7 (recommended)
+## 24/7 hosting (chosen: Render)
 
-Use a host that supports long-running Python processes (Railway, Render, Fly.io, VPS).
+This repo now includes `render.yaml` for one-click Render deployment as a **worker** process.
 
-### Example process command
+### Steps
+1. Push this repo to GitHub.
+2. In Render: **New +** → **Blueprint**.
+3. Select your repo (Render reads `render.yaml`).
+4. Set environment variables in Render:
+   - `DISCORD_BOT_TOKEN` (required)
+   - `DOTA_API_KEY` (optional)
+   - `GUILD_ID` (optional, recommended for testing)
+5. Deploy.
+
+Render start command is already configured as:
 
 ```bash
 python discord_bot.py
 ```
 
-### Required env vars on host
+---
 
-- `DISCORD_BOT_TOKEN` (required)
-- `DOTA_API_KEY` (optional)
+## Security note
+
+If you ever paste your bot token publicly, **immediately regenerate it** in the Discord Developer Portal.
 
 ---
 
-## Files
-
-- `dota_service.py`: shared OpenDota API + leaderboard logic
-- `discord_bot.py`: Discord slash-command bot
+## Project files
+- `dota_service.py`: shared OpenDota + leaderboard logic
+- `discord_bot.py`: Discord bot and slash commands
 - `dashboard.py`: Streamlit dashboard
-- `players.json`: created automatically for tracked players
-
+- `render.yaml`: Render deployment blueprint
+- `.env.example`: environment variable template
