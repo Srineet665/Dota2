@@ -1,54 +1,102 @@
-# Dota 2 Friends Dashboard
+# Dota 2 Friends Dashboard + Discord Bot
 
-A lightweight Streamlit dashboard that compares recent Dota 2 match results for a group of friends. Supply your Steam64 IDs (from your profile URLs) and an optional OpenDota/Dota Web API key to see who is winning or losing the most over the past week or month.
+This repo includes:
+1. **Streamlit dashboard** (`dashboard.py`) for interactive charts.
+2. **Discord bot** (`discord_bot.py`) with slash commands for weekly leaderboards.
 
-## Features
-- Converts Steam64 profile IDs into Dota account IDs automatically.
-- Pulls recent matches for each player from the OpenDota API (supports an API key if you have one).
-- Summary tables for the last 7 days and 30 days: games played, wins, losses, win rate, average K/D/A, and streak highlights.
-- Highlights the top winners and top losers in your group.
-- Designed for easy embedding in Discord via Streamlit Community Cloud or any HTTPS host.
+## Discord commands
+- `/player add steam_id:<steam64> alias:<name>`
+- `/player remove steam_id:<steam64>`
+- `/player activate steam_id:<steam64>`
+- `/player deactivate steam_id:<steam64>`
+- `/player list`
+- `/weekly` (top + worst active players in last 7 days)
+- `/invite` (prints OAuth invite URL)
 
-## Quick start
-##codex/create-dota-2-dashboard-using-api-c2dene
-1. (Recommended) Use Python 3.10+ and create a virtual environment:
-   ```bashn
-   python -m venv .venv
-   source .venv/bin/activate  # Windows: .venv\Scripts\activate
-   ```
-2. Install dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
-3. Run the dashboard locally (add your API key via env var or in the UI):
-   ```bashi
-   # Optionally set your OpenDota/Steam Web API key for higher rate limits
-   export DOTA_API_KEY="<your_api_key>"
+The bot stores tracked players per-server in `players.json`.
 
-   # Launch Streamlit
-   streamlit run dashboard.py
-   ```
-4. Open the URL Streamlit prints (default: http://localhost:8501) to interact with the dashboard. Paste your Steam64 profile IDs (one per line or comma-separated). Add your OpenDota or Steam API key (optional) to improve rate limits.
+---
 
-1. Install dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
-2. Run the dashboard locally:
-   ```bash
-   streamlit run dashboard.py
-   ```
-3. Open the provided local URL to interact with the dashboard. Paste your Steam64 profile IDs (one per line or comma-separated). Add your OpenDota or Steam API key (optional) to improve rate limits.
-main
+## Local run
 
-## Embedding in Discord
-- Deploy the app to a public URL (e.g., Streamlit Community Cloud or any HTTPS host).
-- In Discord, create an embed in a message or channel topic that links to the hosted dashboard URL. Discord does not natively render arbitrary iframes, so the link/preview card is the most reliable way to surface the dashboard to your friends.
-- For lightweight status messages, you can also use Discord webhooks that post the summary tables as images (future enhancement).
+```bash
+python -m venv .venv
+source .venv/bin/activate  # Windows: .venv\Scripts\activate
+pip install -r requirements.txt
+```
 
-## Environment variables
-- `DOTA_API_KEY` (optional): Your OpenDota or Steam Web API key. You can also paste it into the dashboard sidebar at runtime.
+Set env vars:
 
-## Supported Steam IDs
-The dashboard ships with two example Steam64 IDs based on your profiles. Replace or extend them in the text area when running the app.
+```bash
+export DISCORD_BOT_TOKEN="<your_discord_bot_token>"
+export DOTA_API_KEY="<optional_api_key>"
+# Optional for fast slash command registration in one test server:
+export GUILD_ID="<your_discord_server_id>"
+```
 
+Run bot:
+
+```bash
+python discord_bot.py
+```
+
+Run dashboard:
+
+```bash
+streamlit run dashboard.py
+```
+
+---
+
+## Discord app setup
+
+1. Go to <https://discord.com/developers/applications>
+2. Create app → add Bot.
+3. Copy **Bot Token** and set `DISCORD_BOT_TOKEN`.
+4. OAuth2 URL Generator:
+   - Scopes: `bot`, `applications.commands`
+   - Bot permissions: `Send Messages`, `Embed Links`
+5. Invite to your server.
+
+Direct invite URL format:
+
+```text
+https://discord.com/oauth2/authorize?client_id=<APPLICATION_ID>&permissions=18432&scope=bot%20applications.commands
+```
+
+---
+
+## 24/7 hosting (chosen: Render)
+
+This repo now includes `render.yaml` for one-click Render deployment as a **worker** process.
+
+### Steps
+1. Push this repo to GitHub.
+2. In Render: **New +** → **Blueprint**.
+3. Select your repo (Render reads `render.yaml`).
+4. Set environment variables in Render:
+   - `DISCORD_BOT_TOKEN` (required)
+   - `DOTA_API_KEY` (optional)
+   - `GUILD_ID` (optional, recommended for testing)
+5. Deploy.
+
+Render start command is already configured as:
+
+```bash
+python discord_bot.py
+```
+
+---
+
+## Security note
+
+If you ever paste your bot token publicly, **immediately regenerate it** in the Discord Developer Portal.
+
+---
+
+## Project files
+- `dota_service.py`: shared OpenDota + leaderboard logic
+- `discord_bot.py`: Discord bot and slash commands
+- `dashboard.py`: Streamlit dashboard
+- `render.yaml`: Render deployment blueprint
+- `.env.example`: environment variable template
