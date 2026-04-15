@@ -54,7 +54,7 @@ python discord_bot.py
 4. Under **OAuth2 → URL Generator**:
    - Scopes: `bot`, `applications.commands`
    - Bot Permissions: `Send Messages`, `Embed Links`
-5. Open the generated URL to invite your bot to your server.
+5. Open the generated URL to invite your bot to your server (or run `/invite` once the bot is online).
 
 ### Slash commands in your server
 
@@ -65,6 +65,7 @@ After the bot starts, use:
 - `/player activate steam_id:<steam64>`
 - `/player list`
 - `/weekly`
+- `/invite` (prints your OAuth invite URL)
 
 The bot stores guild player settings in `players.json`.
 

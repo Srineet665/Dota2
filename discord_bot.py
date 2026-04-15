@@ -4,6 +4,7 @@ import json
 import os
 from pathlib import Path
 from typing import Any, Dict, List, Optional
+from urllib.parse import urlencode
 
 import discord
 from discord import app_commands
@@ -99,6 +100,17 @@ bot = DotaDiscordBot()
 player_group = app_commands.Group(name="player", description="Manage tracked Dota players")
 
 
+def build_invite_url(application_id: int) -> str:
+    params = urlencode(
+        {
+            "client_id": str(application_id),
+            "permissions": "18432",  # Send Messages + Embed Links
+            "scope": "bot applications.commands",
+        }
+    )
+    return f"https://discord.com/oauth2/authorize?{params}"
+
+
 @bot.event
 async def on_ready() -> None:
     print(f"Logged in as {bot.user}")
@@ -188,6 +200,21 @@ async def player_list(interaction: discord.Interaction) -> None:
     await interaction.response.send_message("\n".join(lines))
 
 
+
+
+@bot.tree.command(name="invite", description="Get the bot invite URL")
+async def invite(interaction: discord.Interaction) -> None:
+    application_id = bot.application_id
+    if application_id is None:
+        await interaction.response.send_message(
+            "Application ID is unavailable right now. Try again in a moment.",
+            ephemeral=True,
+        )
+        return
+
+    url = build_invite_url(application_id)
+    await interaction.response.send_message(f"Invite URL: {url}", ephemeral=True)
+
 @bot.tree.command(name="weekly", description="Show weekly leaderboard for active players")
 async def weekly(interaction: discord.Interaction) -> None:
     guild = interaction.guild
@@ -215,14 +242,11 @@ async def weekly(interaction: discord.Interaction) -> None:
         await interaction.followup.send("No active players played any matches in the last 7 days.")
         return
 
-    active_df["display"] = active_df["steam_id"].map(lambda sid: bot.store.alias_for(guild.id, sid))
+    ranked_df = active_df.copy()
+    ranked_df["steam_id"] = ranked_df["steam_id"].map(lambda sid: bot.store.alias_for(guild.id, sid))
 
-    top = highlight_top_players(active_df.rename(columns={"display": "steam_id"}), "win_rate", top_n=5)
-    worst = highlight_top_players(
-        add_loss_rate(active_df.rename(columns={"display": "steam_id"})),
-        "loss_rate",
-        top_n=5,
-    )
+    top = highlight_top_players(ranked_df, "win_rate", top_n=5)
+    worst = highlight_top_players(add_loss_rate(ranked_df), "loss_rate", top_n=5)
 
     embed = discord.Embed(
         title="Dota 2 Weekly Leaderboard",
